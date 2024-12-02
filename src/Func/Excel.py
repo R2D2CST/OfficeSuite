@@ -3,6 +3,7 @@ import os
 
 # Third party libraries
 import openpyxl
+from openpyxl.utils import get_column_letter
 
 # Self build libraries
 
@@ -10,6 +11,17 @@ from Func.AbstractDocument import AbstractDocument
 
 
 class Excel(AbstractDocument):
+    """
+    Class reads a Excel file type or builds a new Excel file if does not exists
+    Args:
+        > filePath (str) : file path where the workbook exists
+    Returns: None
+    Attributes:
+        > filePath (str) : file path where the workbook exists
+        > workbook (workbook) : file object class
+        > sheets (list[str]) : list of sheets contained in the workbook
+        > workbookData (list[list[list[any]]]): 3D matrix (sheet, row, column)
+    """
 
     def __init__(self, filePath: str):
         """
@@ -21,6 +33,7 @@ class Excel(AbstractDocument):
                 > filePath (str) : file path where the workbook exists
                 > workbook (workbook) : file object class
                 > sheets (list[str]) : list of sheets contained in the workbook
+                > workbookData (list[list[list[any]]]): 3D matrix (sheet, row, column)
             Raises: None
         """
 
@@ -64,10 +77,31 @@ class Excel(AbstractDocument):
             Attributes:
                 > workbook (workbook) : file object class
                 > sheets (list[str]) : list of sheets contained in the workbook
+                > workbookData (list[list[list[any]]]): 3D matrix (sheet, row, column).
             Raises: None
         """
         self.workbook = openpyxl.load_workbook(filename=self.filePath)
         self.sheets = self.workbook.get_sheet_names()
+
+        self.workbookData = list()
+
+        # 3D matrix to store sheet data.
+        self.workbookData = []
+
+        for sheet in self.sheets:
+
+            currentSheet = self.workbook[sheet]
+            sheetMatrix = []  # 2D matrix for the current sheet.
+
+            # Iterate through rows, returning only values.
+            for row in currentSheet.iter_rows(values_only=True):
+
+                # Append the row as a list.
+                sheetMatrix.append(list(row))
+
+            # Add the 2D matrix to the 3D list.
+            self.workbookData.append(sheetMatrix)
+
         pass
 
     def __createNewFile(self) -> None:
@@ -82,7 +116,11 @@ class Excel(AbstractDocument):
         del workbook
         pass
 
-    def __readSheet(self) -> None:
+    def printWorkbookData(self):
+        for sheetIndex, sheet in enumerate(self.workbookData):
+            print(f"Sheet: {self.sheets[sheetIndex]}\nContent:\n")
+            for row in sheet:
+                print(row)
         pass
 
     pass
