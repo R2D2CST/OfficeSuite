@@ -1,24 +1,18 @@
-from Func.Excel import Excel
-from Func.Word import Word
-from Func.PDF import PDF
+from Render.ProjectBuilder import ProjectBuilder
+from Render.Render import Renderer
 
-excel = Excel(filePath="/home/r2d2cst/Documents/OfficeSuite/tests/testFile1.xlsx")
-print(excel.filePath)
-print(excel.workbook)
-print(excel.sheets)
-print(excel.workbookData)
-excel.printWorkbookData()
+ProjectBuilder(
+    projectPath="/home/r2d2cst/Documents/OfficeSuite/tests",
+    projectName="Project Test",
+)
 
-print()
 
-word = Word(filePath="/home/r2d2cst/Documents/OfficeSuite/tests/testFile1.docx")
-print(word.filePath)
-print(word.document)
-print(word.paragraphsContent)
-print(word.tablesContent)
-word.printDocumentContent()
+renderObject = Renderer(
+    templatesDirectory="/home/r2d2cst/Documents/OfficeSuite/tests/Project Test/Templates",
+    databasePath="/home/r2d2cst/Documents/OfficeSuite/tests/Project Test/Database/database.xlsx",
+    outputRenders="/home/r2d2cst/Documents/OfficeSuite/tests/Project Test",
+    assetsDirectory="/home/r2d2cst/Documents/OfficeSuite/tests/Project Test/Assets",
+)
 
-pdf = PDF(filePath="/home/r2d2cst/Documents/OfficeSuite/tests/pdftest.pdf")
-print(pdf.filePath)
-print(pdf.document)
-pdf.printDocumentContent()
+renderObject.renderWordDocuments()
+renderObject.renderExcelDocuments()

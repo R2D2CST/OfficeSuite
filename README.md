@@ -1,2 +1,2 @@
 # OfficeSuite
-Windows, Linux Office Suite Handller
+Windows, Linux Office Suite Handler

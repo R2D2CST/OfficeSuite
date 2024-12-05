@@ -1,8 +1,8 @@
 # Python native libraries
-import os
 
 # Third party libraries
 from docx import Document
+from docx.opc.exceptions import PackageNotFoundError
 
 # Self build libraries
 
@@ -10,6 +10,16 @@ from Func.AbstractDocument import AbstractDocument
 
 
 class Word(AbstractDocument):
+    """
+    Class reads a Word file type or builds a new Word file if does not exists
+    Args:
+        > filePath (str):
+    Attr:
+        > filePath (str):
+        > document (Document):
+        > paragraphsContent (list):
+        > tablesContent (list):
+    """
 
     def __init__(self, filePath: str) -> None:
 
@@ -25,6 +35,9 @@ class Word(AbstractDocument):
 
         # If file does not exists we build a new one
         except FileNotFoundError:
+            self.__createNewFile()
+            self.__readFile()
+        except PackageNotFoundError:
             self.__createNewFile()
             self.__readFile()
         pass
@@ -103,5 +116,9 @@ class Word(AbstractDocument):
                 print(
                     "\t" + "\t| ".join(rowData)
                 )  # Tab-separated values for better formatting
+
+    def saveAndClose(self) -> None:
+        self.document.save(path_or_stream=self.filePath)
+        pass
 
     pass

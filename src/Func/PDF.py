@@ -1,5 +1,4 @@
 # Python native libraries
-import os
 
 # Third-party libraries
 import fitz  # PyMuPDF

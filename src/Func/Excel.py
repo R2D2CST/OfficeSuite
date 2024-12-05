@@ -1,5 +1,4 @@
 # Python native libraries
-import os
 
 # Third party libraries
 import openpyxl
@@ -81,7 +80,7 @@ class Excel(AbstractDocument):
             Raises: None
         """
         self.workbook = openpyxl.load_workbook(filename=self.filePath)
-        self.sheets = self.workbook.get_sheet_names()
+        self.sheets = self.workbook.sheetnames
 
         self.workbookData = list()
 
@@ -122,5 +121,21 @@ class Excel(AbstractDocument):
             for row in sheet:
                 print(row)
         pass
+
+    def saveAndClose(self) -> None:
+        self.workbook.save(self.filePath)
+        self.workbook.close()
+        pass
+
+    def _erraseDefaultSheets(self):
+        try:
+            for defaultSheetName in ["Sheet", "Hoja"]:
+                defaultSheet = self.workbook[defaultSheetName]
+                self.workbook.remove(defaultSheet)
+                break
+        except ValueError:
+            pass
+        except KeyError:
+            pass
 
     pass
