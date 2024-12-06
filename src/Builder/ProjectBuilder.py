@@ -5,6 +5,7 @@ import os
 from Builder.DatabaseBuilder import DatabaseBuilder
 from Builder.ExcelTemplate import ExcelTemplate
 from Builder.WordTemplate import WordTemplate
+from Builder.WordPlaceHolder import WordPlaceHolder
 from Func.Images.Placeholder import Placeholder
 from Func.Images.PlaceholderModel import PlaceholderModel
 
@@ -140,7 +141,10 @@ class ProjectBuilder:
             templatePath=self.docTemplatePath,
             placeholdersDirectory=self.placeholderDirPath,
         )
-
+        WordPlaceHolder(
+            templatePath=self.docTemplatePath,
+            placeholdersDirectory=self.placeholderDirPath,
+        )
         pass
 
     pass

@@ -1,5 +1,6 @@
 # Python native libraries
 import os
+from typing import Any
 
 # Third party libraries
 import openpyxl
@@ -10,7 +11,7 @@ from docx.shared import Mm
 from Func.Excel.Excel import Excel
 from Render.WordRender import WordRender
 
-
+"""
 class WordImageRenderer(WordRender):
 
     def __init__(
@@ -35,11 +36,12 @@ class WordImageRenderer(WordRender):
             raise FileNotFoundError("Assets directory does not exist.")
 
         # We execute the main procedures for rendering documents
-        self.__buildConstants()
+        super().__buildConstants()
+        super().__readDatabase()
         self.__readDatabase()
-        self.__transformWordMatrix()
+        super().__transformWordMatrix()
         self.__transformPlaceholderMatrix()
-        self.__getTemplatesList()
+        super().__getTemplatesList()
         self.__renderWordImageDocuments()
         pass
 
@@ -62,8 +64,6 @@ class WordImageRenderer(WordRender):
         pass
 
     def __transformPlaceholderMatrix(self) -> None:
-        if not self.assetsDirectory:
-            return
 
         # We build the placeholders context
         self.keyWordsPlaceholders = self.__placeholdersMatrix[1]  # Header row
@@ -82,27 +82,29 @@ class WordImageRenderer(WordRender):
 
                 # Skip if no value for the placeholder
                 if not value:
-                    continue
-
-                # Construct image path
-                imagePath = os.path.join(self.assetsDirectory, value)
-                if not os.path.exists(imagePath):
-                    raise FileNotFoundError(
-                        f"Rendering image not found: {imagePath} (Placeholder: {value})"
-                    )
+                    raise IndexError(f"Empty Place Holder Error in {columnKeyword}")
 
                 # Create InlineImage object for Word rendering
-                runDictionary[columnKeyword] = InlineImage(
-                    DocxTemplate(
-                        "dummy.docx"
-                    ),  # Temporary template for inline image creation
-                    imagePath,
-                    width=Mm(50),  # Adjust image size as needed
-                )
+                runDictionary[columnKeyword] = value
 
             # Use the same "run" keys from wordContext
             runKey = self.wordKeyHeaders[runIndex]
             self.placeholderContext[runKey] = runDictionary
+
+    def __imagePathBuilder(self, partialPath: str) -> str:
+        imagePath = os.path.join(self.assetsDirectory, partialPath)
+        if not os.path.exists(imagePath):
+            raise FileNotFoundError(
+                f"Rendering image not found: {imagePath} (Placeholder: {partialPath})"
+            )
+        return imagePath
+
+    @staticmethod
+    def __inLineImageBuilder(template, imagePath: str) -> InlineImage:
+        return InlineImage(
+            template,
+            imagePath,
+        )
 
     def __renderWordImageDocuments(self) -> None:
 
@@ -126,7 +128,16 @@ class WordImageRenderer(WordRender):
 
                 # We merge the word with placeholder context
                 context = self.wordContext.get(run, {}).copy()
-                placeholders = self.placeholderContext.get(run, {})
+                placeholdersStructure = self.placeholderContext.get(run, {})
+                secondContext = {}
+                for key, value in placeholdersStructure.items():
+                    imagePath = self.__imagePathBuilder(value)
+                    inlineImageObject = self.__inLineImageBuilder(
+                        template=documentTemplate,
+                        imagePath=imagePath,
+                    )
+                    secondContext[key] = inlineImageObject
+                context.update(secondContext)
 
                 # We actually render the document
                 documentTemplate.render(context=context)
@@ -150,3 +161,135 @@ class WordImageRenderer(WordRender):
         pass
 
     pass
+"""
+
+
+class WordImageRenderer(WordRender):
+    """
+    Specialized class for rendering Word documents with image placeholders.
+
+    Args:
+        templatesDirectory (str): Directory where Word templates are stored.
+        databasePath (str): Path to the Excel database file.
+        outputRenders (str): Directory where rendered documents will be saved.
+        assetsDirectory (str): Directory containing image assets for placeholders.
+
+    Raises:
+        FileNotFoundError: If any of the directories or files do not exist.
+        ValueError: If required sheets are missing in the database.
+    """
+
+    def __init__(
+        self,
+        templatesDirectory: str,
+        databasePath: str,
+        outputRenders: str,
+        assetsDirectory: str,
+    ) -> None:
+        # Principal attributes
+        self.templatesDirectory = templatesDirectory
+        self.databasePath = databasePath
+        self.outputRenders = outputRenders
+        self.assetsDirectory = assetsDirectory
+
+        # Initial validations
+        if not os.path.exists(self.templatesDirectory):
+            raise FileNotFoundError("Templates directory does not exist.")
+        if not os.path.exists(self.databasePath):
+            raise FileNotFoundError("Database path does not exist.")
+        if self.assetsDirectory and not os.path.exists(self.assetsDirectory):
+            raise FileNotFoundError("Assets directory does not exist.")
+
+        # Main procedures for rendering documents
+        self._WordRender__buildConstants()
+        self._WordRender__readDatabase()
+        self.__readDatabase()
+        self._WordRender__transformWordMatrix()
+        self.__transformPlaceholderMatrix()
+        self._WordRender__getTemplatesList()
+        self.__renderWordImageDocuments()
+
+    def __readDatabase(self) -> None:
+        """
+        Reads the placeholders sheet from the database and validates its content.
+        Raises:
+            ValueError: If the "Place Holders" sheet is missing.
+        """
+        excel = Excel(self.databasePath)
+        self.__matrix = excel.workbookData
+        self.__sheets = excel.sheets
+
+        for index, sheetName in enumerate(self.__sheets):
+            if sheetName == "Place Holders":
+                self.__placeholdersMatrix = self.__matrix[index]
+
+        if not self.__placeholdersMatrix:
+            raise ValueError("Missing required sheet: Place Holders.")
+
+    def __transformPlaceholderMatrix(self) -> None:
+        """
+        Transforms the placeholders matrix into a structured context dictionary.
+        """
+        self.keyWordsPlaceholders = self.__placeholdersMatrix[1]  # Header row
+        self.placeholderContext = {}
+
+        for runIndex, row in enumerate(self.__placeholdersMatrix[2:], start=1):
+            runDictionary = {}
+            for columnIndex, columnKeyword in enumerate(self.keyWordsPlaceholders):
+                value = row[columnIndex]
+                if not value:
+                    raise IndexError(f"Empty placeholder found in {columnKeyword}")
+                runDictionary[columnKeyword] = value
+
+            runKey = self.wordKeyHeaders[runIndex]
+            self.placeholderContext[runKey] = runDictionary
+
+    def __imagePathBuilder(self, partialPath: str) -> str:
+        """
+        Constructs the full image path from a partial path.
+        """
+        imagePath = os.path.join(self.assetsDirectory, partialPath)
+        if not os.path.exists(imagePath):
+            raise FileNotFoundError(
+                f"Rendering image not found: {imagePath} (Placeholder: {partialPath})"
+            )
+        return imagePath
+
+    @staticmethod
+    def __inLineImageBuilder(template: DocxTemplate, imagePath: str) -> InlineImage:
+        """
+        Builds an InlineImage object for rendering in Word.
+        """
+        return InlineImage(template, imagePath)
+
+    def __renderWordImageDocuments(self) -> None:
+        """
+        Renders Word documents by merging text and image placeholders.
+        """
+        for templatePath in self.wordTemplatesPaths:
+            documentTemplate = DocxTemplate(template_file=templatePath)
+
+            for run in self.wordKeyHeaders[1:]:
+                runOutputDirectory = os.path.join(
+                    self.outputRenders, self.rendersDirectory, run
+                )
+                os.makedirs(runOutputDirectory, exist_ok=True)
+
+                fileName = os.path.basename(templatePath)
+                renderName = f"{run}_{fileName}"
+                renderOutput = os.path.join(runOutputDirectory, renderName)
+
+                context = self.wordContext.get(run, {}).copy()
+                placeholdersStructure = self.placeholderContext.get(run, {})
+                secondContext = {}
+
+                for key, value in placeholdersStructure.items():
+                    imagePath = self.__imagePathBuilder(value)
+                    inlineImageObject = self.__inLineImageBuilder(
+                        template=documentTemplate, imagePath=imagePath
+                    )
+                    secondContext[key] = inlineImageObject
+
+                context.update(secondContext)
+                documentTemplate.render(context=context)
+                documentTemplate.save(renderOutput)
