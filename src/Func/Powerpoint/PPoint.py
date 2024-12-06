@@ -4,7 +4,7 @@
 
 # Self build libraries
 
-from AbstractDocument import AbstractDocument
+from Func.AbstractDocument import AbstractDocument
 
 
 class PPoint(AbstractDocument):

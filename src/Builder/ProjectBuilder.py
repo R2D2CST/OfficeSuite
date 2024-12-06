@@ -2,11 +2,11 @@
 import os
 
 # Third party libraries
-from Render.DatabaseBuilder import DatabaseBuilder
-from Render.ExcelTemplate import ExcelTemplate
-from Render.WordTemplate import WordTemplate
-from Func.Placeholder import Placeholder
-from Func.PlaceholderModel import PlaceholderModel
+from Builder.DatabaseBuilder import DatabaseBuilder
+from Builder.ExcelTemplate import ExcelTemplate
+from Builder.WordTemplate import WordTemplate
+from Func.Images.Placeholder import Placeholder
+from Func.Images.PlaceholderModel import PlaceholderModel
 
 # Self build libraries
 

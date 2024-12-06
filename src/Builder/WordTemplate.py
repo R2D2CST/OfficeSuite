@@ -4,7 +4,7 @@ import os
 # Third party libraries
 
 # Self build libraries
-from Func.Word import Word
+from Func.Word.Word import Word
 
 
 class WordTemplate(Word):
@@ -19,8 +19,9 @@ class WordTemplate(Word):
         # We write and Save the content file
         self.__buildDummyContent()
         self.placeholdersDirectory = placeholdersDirectory
-        if self.placeholdersDirectory:
-            self.__addPlaceholders()
+        # ! We disable this function until its working
+        # if self.placeholdersDirectory:
+        #   self.__addPlaceholders()
         self.saveAndClose()
         pass
 
@@ -79,31 +80,6 @@ class WordTemplate(Word):
             "Key_Word_7\t:\t{{Key_Word_7}}",
             "Key_Word_8\t:\t{{Key_Word_8}}",
             "Key_Word_9\t:\t{{Key_Word_9}}",
-            "Place Holder\t:\t{{Place_Holder_1}}",
-            "Place Holder\t:\t{{Place_Holder_4}}",
-            "Place Holder\t:\t{{Place_Holder_5}}",
-            "Place Holder\t:\t{{Place_Holder_2}}",
-            "Place Holder\t:\t{{Place_Holder_6}}",
-            "Place Holder\t:\t{{Place_Holder_7}}",
-            "Place Holder\t:\t{{Place_Holder_8}}",
-            "Place Holder\t:\t{{Place_Holder_3}}",
-            "Place Holder\t:\t{{Place_Holder_9}}",
-            "Place Holder\t:\t{{Place_Holder_10}}",
-            "Place Holder\t:\t{{Place_Holder_11}}",
-            "Place Holder\t:\t{{Place_Holder_12}}",
-            "Place Holder\t:\t{{Place_Holder_13}}",
-            "Place Holder\t:\t{{Place_Holder_14}}",
-            "Place Holder\t:\t{{Place_Holder_15}}",
-            "Place Holder\t:\t{{Place_Holder_16}}",
-            "Place Holder\t:\t{{Place_Holder_17}}",
-            "Place Holder\t:\t{{Place_Holder_18}}",
-            "Place Holder\t:\t{{Place_Holder_19}}",
-            "Place Holder\t:\t{{Place_Holder_20}}",
-            "Place Holder\t:\t{{Place_Holder_21}}",
-            "Place Holder\t:\t{{Place_Holder_22}}",
-            "Place Holder\t:\t{{Place_Holder_23}}",
-            "Place Holder\t:\t{{Place_Holder_24}}",
-            "Place Holder\t:\t{{Place_Holder_25}}",
         ]
         for paragraph in content:
             self.document.add_paragraph(text=paragraph)
@@ -128,7 +104,7 @@ class WordTemplate(Word):
                 "Placeholder dummy images can't be found inside the directory"
             )
 
-        # Agregamos cada imagen al documento
+        # We add each image into the document
         for imagePath in listOfContents:
             try:
                 self.document.add_picture(imagePath)

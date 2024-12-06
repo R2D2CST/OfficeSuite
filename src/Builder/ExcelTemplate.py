@@ -2,7 +2,7 @@
 import string
 
 # Third party libraries
-from Func.Excel import Excel
+from Func.Excel.Excel import Excel
 
 # Self build libraries
 
