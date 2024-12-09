@@ -1,11 +1,9 @@
 # Python native libraries
 import os
-from typing import Any
 
 # Third party libraries
-import openpyxl
 from docxtpl import DocxTemplate, InlineImage
-from docx.shared import Mm
+from tqdm import tqdm
 
 # Self build libraries
 from Func.Excel.Excel import Excel
@@ -201,13 +199,26 @@ class WordImageRenderer(WordRender):
             raise FileNotFoundError("Assets directory does not exist.")
 
         # Main procedures for rendering documents
-        self._WordRender__buildConstants()
-        self._WordRender__readDatabase()
-        self.__readDatabase()
-        self._WordRender__transformWordMatrix()
-        self.__transformPlaceholderMatrix()
-        self._WordRender__getTemplatesList()
-        self.__renderWordImageDocuments()
+        steps = [
+            self._WordRender__buildConstants,
+            self._WordRender__readDatabase,
+            self.__readDatabase,
+            self._WordRender__transformWordMatrix,
+            self.__transformPlaceholderMatrix,
+            self._WordRender__getTemplatesList,
+            self.__renderWordImageDocuments,
+        ]
+        totalSteps = len(steps)
+        with tqdm(
+            total=totalSteps,
+            desc="Rendering Word templates in project",
+            unit="step",
+        ) as progressBar:
+            for index, step in enumerate(iterable=steps):
+                progressBar.set_description(f"Step {index+1} of {totalSteps}")
+                step()
+                progressBar.update(1)
+            pass
 
     def __readDatabase(self) -> None:
         """

@@ -3,6 +3,7 @@ import os
 
 # Third party libraries
 from docxtpl import DocxTemplate
+from tqdm import tqdm
 
 # Self build libraries
 from Func.Excel.Excel import Excel
@@ -51,11 +52,25 @@ class WordRender:
             raise FileNotFoundError("Database path does not exist.")
 
         # We execute the main procedures for rendering documents
-        self.__buildConstants()
-        self.__readDatabase()
-        self.__transformWordMatrix()
-        self.__getTemplatesList()
-        self.__renderWordDocuments()
+
+        steps = [
+            self.__buildConstants,
+            self.__readDatabase,
+            self.__transformWordMatrix,
+            self.__getTemplatesList,
+            self.__renderWordDocuments,
+        ]
+        totalSteps = len(steps)
+        with tqdm(
+            total=totalSteps,
+            desc="Rendering Word templates in project",
+            unit="step",
+        ) as progressBar:
+            for index, step in enumerate(iterable=steps):
+                progressBar.set_description(f"Step {index+1} of {totalSteps}")
+                step()
+                progressBar.update(1)
+            pass
         pass
 
     def __buildConstants(self):

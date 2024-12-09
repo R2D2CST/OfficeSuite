@@ -3,6 +3,7 @@ import os
 
 # Third party libraries
 import openpyxl
+from tqdm import tqdm
 
 # Self build libraries
 from Func.Excel.Excel import Excel
@@ -53,11 +54,24 @@ class ExcelRenderer:
             raise FileNotFoundError("Database path does not exist.")
 
         # We execute the main procedures for rendering documents
-        self.__buildConstants()
-        self.__readDatabase()
-        self.__transformExcelMatrix()
-        self.__getTemplatesList()
-        self.__renderExcelDocuments()
+        steps = [
+                self.__buildConstants,
+                self.__readDatabase,
+                self.__transformExcelMatrix,
+                self.__getTemplatesList,
+                self.__renderExcelDocuments,
+            ]
+        totalSteps = len(steps)
+        with tqdm(
+            total=totalSteps,
+            desc="Rendering Excel templates in project",
+            unit="step",
+        ) as progressBar:
+            for index, step in enumerate(iterable=steps):
+                progressBar.set_description(f"Step {index+1} of {totalSteps}")
+                step()
+                progressBar.update(1)
+            pass
         pass
 
     def __buildConstants(self):

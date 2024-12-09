@@ -2,14 +2,15 @@
 import os
 
 # Third party libraries
+from tqdm import tqdm
+
+# Self build libraries
 from Builder.DatabaseBuilder import DatabaseBuilder
 from Builder.ExcelTemplate import ExcelTemplate
 from Builder.WordTemplate import WordTemplate
 from Builder.WordPlaceHolder import WordPlaceHolder
 from Func.Images.Placeholder import Placeholder
 from Func.Images.PlaceholderModel import PlaceholderModel
-
-# Self build libraries
 
 
 class ProjectBuilder:
@@ -27,9 +28,22 @@ class ProjectBuilder:
         """
         self.projectPath: str = projectPath
         self.projectName: str = projectName
-        self.__buildConstants()
-        self.__buildProjectArchitecture()
-        self.__buildAssets()
+        steps = [
+            self.__buildConstants,
+            self.__buildProjectArchitecture,
+            self.__buildAssets,
+        ]
+        totalSteps = len(steps)
+        with tqdm(
+            total=totalSteps,
+            desc="Building Project",
+            unit="step",
+        ) as progressBar:
+            for index, step in enumerate(iterable=steps):
+                progressBar.set_description(f"Step {index+1} of {totalSteps}")
+                step()
+                progressBar.update(1)
+            pass
         pass
 
     def __buildConstants(self):
