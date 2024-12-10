@@ -1,6 +1,9 @@
 # Skip test documents and renders
 .tests
 
+# We skip the auto-py-to-exe configuration.
+.docs/auto-py-to-exe.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

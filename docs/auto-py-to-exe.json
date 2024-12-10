@@ -1,0 +1,109 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "/home/r2d2cst/Documents/OfficeSuite/src/main.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": true
+  },
+  {
+   "optionDest": "console",
+   "value": true
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "/home/r2d2cst/Documents/OfficeSuite/assets/crown.ico"
+  },
+  {
+   "optionDest": "name",
+   "value": "Office Suite"
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "argv_emulation",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "docxtpl"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "matplotlib"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "numpy"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "openpyxl"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "pillow"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "psutil"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "PyMuPDF"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "pynput"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "python-docx"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "python-xlib"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "tqdm"
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}
