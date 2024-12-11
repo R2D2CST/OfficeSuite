@@ -8,11 +8,11 @@ from datetime import datetime
 from Builder.ProjectBuilder import ProjectBuilder
 from SystemOperations.SystemOperations import SystemOperations
 from Render.ExcelRender import ExcelRenderer
-from Render.WordRender import WordRender
 from Render.WordImageRender import WordImageRenderer
+from TerminalUserInterface.Requests import Requests
 
 
-class TerminalUserInterface:
+class TerminalUserInterface(Requests):
     """
     Class manages the main terminal application for automate Office Suite documents.
     """
@@ -51,56 +51,15 @@ class TerminalUserInterface:
 
     @staticmethod
     def __exitProcedure() -> None:
+        """
+        Method terminates the application and closes all the procedures.
+        """
         input("Until next time (Please type [Enter] to exit...")
-        exit()
-
-    @staticmethod
-    def __askForString() -> str:
-        """
-        Asks for a string type selection to the user until user gets it done.
-        Returns:
-            selection (str): string selected by the user
-        """
-        return input("Please type in an response: ")
-
-    @staticmethod
-    def __askNumericSelection() -> int:
-        """
-        Asks for a numeric selection to the user until user gets it done.
-        Returns:
-            selection (int): integer number selected by the user
-        """
-        while True:
-            print("Please select an option")
-            selection = input("Type in a round number: ")
-            try:
-                selection = int(selection)
-            except ValueError:
-                print(
-                    "ValueError: You must select a integer number examples (1,2,3...)."
-                )
-                continue
-            return selection
-
-    @staticmethod
-    def __askYesNo() -> bool:
-        """
-        Ask the user for a Yes or No question and returns (true) if yes is answered (false) otherwise.
-        Returns:
-            answer (bool): True if "yes" false otherwise.
-        """
-        trueOptions = ["yes", "si", "y"]
-        falseOptions = ["no", "n"]
-        while True:
-            print("Do you want to procede...")
-            selection = input("Type [Yes/Y] to continue [No/N] to cancel: ")
-            if selection.lower() in trueOptions:
-                return True
-            elif selection.lower() in falseOptions:
-                return False
-            else:
-                print("Invalid options you must answer yes or no [Y/N].")
-                continue
+        try:
+            SystemOperations.stopMonitoringPerformance_DAEMON()
+            exit()
+        except Exception as e:
+            print(f"Exception {e} while terminating the application.")
 
     def __printHeader(self) -> None:
         print("--------------------------------------------------")
@@ -118,7 +77,7 @@ class TerminalUserInterface:
     def __mainMenuLoop(self) -> None:
         while True:
             self.__printMainMenu()
-            selection = self.__askNumericSelection()
+            selection = self.askForInteger()
             if selection == 0:
                 self.__exitProcedure()
                 break
@@ -160,13 +119,15 @@ class TerminalUserInterface:
             print("---------- PROJECT  BUILDER (SELECTION) ----------")
 
             print("Existing Projects:")
-            for path in SystemOperations().listDir(
-                path=self.PROJECTS_DIR,
+            for index, path in enumerate(
+                SystemOperations().listDir(
+                    path=self.PROJECTS_DIR,
+                )
             ):
-                print(f"{os.path.basename(path)}")
+                print(f"{index}.- {os.path.basename(path)}")
 
             print("Please enter the new project name...")
-            projectName: str = self.__askForString()
+            projectName: str = self.askForString()
 
             try:
                 SystemOperations.isValidPathString(projectName)
@@ -184,7 +145,7 @@ class TerminalUserInterface:
         )
         print(f"Project Built Successfully at :{project.projectDirPath}")
         print(f"Wold you like to continue working on the builded project?")
-        answer = self.__askYesNo()
+        answer = self.askForYesNo()
         if answer:
             self.selectedProject = projectName
             self.selectedProjectPath = project.projectDirPath
@@ -203,7 +164,7 @@ class TerminalUserInterface:
                 print(
                     "Would you rather go to Main Menu [Yes], or build a new project [No]?..."
                 )
-                selection = self.__askYesNo()
+                selection = self.askForYesNo()
                 if selection:
                     self.__mainMenuLoop()
                     break
@@ -213,7 +174,7 @@ class TerminalUserInterface:
             for index, path in enumerate(projects):
                 print(f"{index}.- {os.path.basename(path)}")
             print("Please select a the project...")
-            selection = self.__askNumericSelection()
+            selection = self.askForInteger()
             try:
                 self.selectedProjectPath = projects[selection]
                 self.selectedProject = os.path.basename(projects[selection])
@@ -228,14 +189,14 @@ class TerminalUserInterface:
         options = [
             "Return to main menu",
             "Open project directory",
-            "Render documents (Traditional)",
+            "Render documents (All)",
             # "Render documents (By Recipe)",
         ]
         while True:
             print("---------- WORK ON PROJECT (OPTION MENU) ----------")
             [print(f"{i}.- {option}") for i, option in enumerate(options)]
             print("Please select an action to take...")
-            selection = self.__askNumericSelection()
+            selection = self.askForInteger()
             if selection == 0:
                 self.__mainMenuLoop()
                 break
