@@ -10,18 +10,21 @@ from SystemOperations.SystemOperations import SystemOperations
 from Render.ExcelRender import ExcelRenderer
 from Render.WordImageRender import WordImageRenderer
 from TerminalUserInterface.Requests import Requests
+from TerminalUserInterface.Procedures import Procedures
 
 
-class TerminalUserInterface(Requests):
+class TerminalUserInterface(Requests, Procedures):
     """
     Class manages the main terminal application for automate Office Suite documents.
     """
 
     def __init__(self):
+
+        # We initialize our class constants and attributes.
+        self.initializeProcedures()
         self.__buildConstants()
-        if not os.path.exists(self.PROJECTS_DIR):
-            os.mkdir(self.PROJECTS_DIR)
-        self.__printHeader()
+
+        # We initialize our main loop.
         self.__mainMenuLoop()
         pass
 
@@ -29,14 +32,6 @@ class TerminalUserInterface(Requests):
         """
         Method builds the constants the application will be using during a normal operation.
         """
-        sysObj = SystemOperations()
-        self.__APP_PATH = sysObj.getAppPath()
-        self.PROJECTS_DIR = os.path.join(self.__APP_PATH, "Projects")
-        self.__OS_KERNEL = sysObj.operativeSystem
-        self.__TEMPLATE_DIR = "Templates"
-        self.__DATABASE_DIR = "Database"
-        self.__DATABASE_FILE_NAME = "database.xlsx"
-        self.__ASSETS_DIR = "Assets"
         self.__APP_NAME = "Office Suite"
         self.__VERSION = "3.0.0"
         self.__SUPPORT = "qfbarturocastella@gmail.com"
@@ -47,19 +42,13 @@ class TerminalUserInterface(Requests):
             "Enable monitoring performance",
             "Enable high performance (User Discretion Advised)",
         ]
+        self.__WORK_ON_PROJECT_OPTIONS = [
+            "Return to main menu",
+            "Open project directory",
+            "Render documents (All)",
+            # "Render documents (By Recipe)",
+        ]
         pass
-
-    @staticmethod
-    def __exitProcedure() -> None:
-        """
-        Method terminates the application and closes all the procedures.
-        """
-        input("Until next time (Please type [Enter] to exit...")
-        try:
-            SystemOperations.stopMonitoringPerformance_DAEMON()
-            exit()
-        except Exception as e:
-            print(f"Exception {e} while terminating the application.")
 
     def __printHeader(self) -> None:
         print("--------------------------------------------------")
@@ -75,31 +64,37 @@ class TerminalUserInterface(Requests):
         pass
 
     def __mainMenuLoop(self) -> None:
+        self.__printHeader()
         while True:
             self.__printMainMenu()
             selection = self.askForInteger()
+            # Exit program
             if selection == 0:
-                self.__exitProcedure()
+                self.exitProcedure()
                 break
+            # Build new project
             elif selection == 1:
-                self.__buildNewProject()
+                self.__buildNewProjectMenu()
                 continue
+            # Select a previous built project
             elif selection == 2:
                 self.__projectSelection()
                 continue
             elif selection == 3:
+                self.__DAEMON = True
                 self.loggerPath = os.path.join(
-                    self.__APP_PATH,
+                    self._Procedures__APP_PATH,
                     f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}performanceLog.csv",
                 )
-                SystemOperations().startMonitoringPerformance_DAEMON(
+                self._Procedures__SYS_OBJ.startMonitoringPerformance_DAEMON(
                     outputLogger=self.loggerPath,
                     printRecord=False,
                 )
+                input("Press [Enter] to continue ...")
                 continue
             elif selection == 4:
                 try:
-                    SystemOperations().elevateToHighPerformance()
+                    self._Procedures__SYS_OBJ.elevateToHighPerformance()
                 except PermissionError:
                     print(
                         PermissionError(
@@ -114,23 +109,14 @@ class TerminalUserInterface(Requests):
                 )
                 continue
 
-    def __buildNewProject(self) -> None:
+    def __buildNewProjectMenu(self) -> None:
         while True:
             print("---------- PROJECT  BUILDER (SELECTION) ----------")
-
-            print("Existing Projects:")
-            for index, path in enumerate(
-                SystemOperations().listDir(
-                    path=self.PROJECTS_DIR,
-                )
-            ):
-                print(f"{index}.- {os.path.basename(path)}")
-
+            self.printExistingProjects()
             print("Please enter the new project name...")
             projectName: str = self.askForString()
-
             try:
-                SystemOperations.isValidPathString(projectName)
+                self._Procedures__SYS_OBJ.isValidPathString(projectName)
                 break
             except ValueError:
                 print(
@@ -153,13 +139,14 @@ class TerminalUserInterface(Requests):
             pass
         else:
             pass
+        pass
 
     def __projectSelection(self) -> None:
         while True:
             print("---------- PROJECT SELECTION (OPTION MENU) ----------")
+            self.printExistingProjects()
             print("Existing Projects:")
-            projects = SystemOperations().listDir(path=self.PROJECTS_DIR)
-            if projects == []:
+            if self._Procedures__projectsList == []:
                 print("Error: No existing projects found.")
                 print(
                     "Would you rather go to Main Menu [Yes], or build a new project [No]?..."
@@ -169,15 +156,15 @@ class TerminalUserInterface(Requests):
                     self.__mainMenuLoop()
                     break
                 else:
-                    self.__buildNewProject()
+                    self.__buildNewProjectMenu()
                     break
-            for index, path in enumerate(projects):
-                print(f"{index}.- {os.path.basename(path)}")
             print("Please select a the project...")
             selection = self.askForInteger()
             try:
-                self.selectedProjectPath = projects[selection]
-                self.selectedProject = os.path.basename(projects[selection])
+                self.selectedProjectPath = self._Procedures__projectsList[selection]
+                self.selectedProject = os.path.basename(
+                    self._Procedures__projectsList[selection]
+                )
                 break
             except IndexError:
                 print("Invalid selection, you must choose a project by its index")
@@ -186,34 +173,36 @@ class TerminalUserInterface(Requests):
         pass
 
     def __workOnProject(self) -> None:
-        options = [
-            "Return to main menu",
-            "Open project directory",
-            "Render documents (All)",
-            # "Render documents (By Recipe)",
-        ]
         while True:
             print("---------- WORK ON PROJECT (OPTION MENU) ----------")
-            [print(f"{i}.- {option}") for i, option in enumerate(options)]
+            [
+                print(f"{i}.- {option}")
+                for i, option in enumerate(self.__WORK_ON_PROJECT_OPTIONS)
+            ]
             print("Please select an action to take...")
             selection = self.askForInteger()
             if selection == 0:
                 self.__mainMenuLoop()
                 break
             elif selection == 1:
-                SystemOperations().openPath(path=self.selectedProjectPath)
+                self._Procedures__SYS_OBJ.openPath(
+                    path=self.selectedProjectPath,
+                )
                 continue
             elif selection == 2:
                 templatesPath = os.path.join(
                     self.selectedProjectPath,
-                    self.__TEMPLATE_DIR,
+                    self._Procedures__TEMPLATE_DIR,
                 )
                 databasePath = os.path.join(
                     self.selectedProjectPath,
-                    self.__DATABASE_DIR,
-                    self.__DATABASE_FILE_NAME,
+                    self._Procedures__DATABASE_DIR,
+                    self._Procedures__DATABASE_FILE_NAME,
                 )
-                assetsPath = os.path.join(self.selectedProjectPath, self.__ASSETS_DIR)
+                assetsPath = os.path.join(
+                    self.selectedProjectPath,
+                    self._Procedures__ASSETS_DIR,
+                )
                 try:
                     WordImageRenderer(
                         templatesDirectory=templatesPath,
